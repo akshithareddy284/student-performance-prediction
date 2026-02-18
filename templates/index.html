@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Performance Predictor</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            color: white;
+            animation: fadeIn 0.7s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: #e0e0e0;
+        }
+
+        input:focus {
+            background: rgba(255,255,255,0.35);
+            transform: scale(1.02);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .result-card {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 12px;
+            animation: pop 0.4s ease-in-out;
+        }
+
+        @keyframes pop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .pass {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+        }
+
+        .fail {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #333;
+        }
+        .result-card {
+    margin-top: 25px;
+    padding: 15px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+}
+
+.pass-text {
+    color: #38ef7d;
+    font-weight: bold;
+    animation: glowGreen 1.5s ease-in-out infinite alternate;
+}
+
+.fail-text {
+    color: #ff4b2b;
+    font-weight: bold;
+    animation: glowRed 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glowGreen {
+    from {
+        text-shadow: 0 0 5px #38ef7d,
+                     0 0 10px #38ef7d,
+                     0 0 15px #2ecc71;
+    }
+    to {
+        text-shadow: 0 0 10px #38ef7d,
+                     0 0 20px #2ecc71,
+                     0 0 30px #27ae60;
+    }
+}
+
+@keyframes glowRed {
+    from {
+        text-shadow: 0 0 5px #ff4b2b,
+                     0 0 10px #ff4b2b,
+                     0 0 15px #ff416c;
+    }
+    to {
+        text-shadow: 0 0 10px #ff4b2b,
+                     0 0 20px #ff416c,
+                     0 0 30px #ff1e00;
+    }
+}
+
+
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <h2>🎓 Student Performance Predictor</h2>
+
+    <form action="/predict" method="post">
+        <input type="number" name="G2" placeholder="G2 Marks (0-20)" required>
+        <input type="number" name="G1" placeholder="G1 Marks (0-20)" required>
+        <input type="number" name="absences" placeholder="Absences (0-93)" required>
+        <input type="number" name="failures" placeholder="Failures (Not negative)" required>
+        <input type="number" name="studytime" placeholder="Study Time (Hours)" required>
+
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if prediction_text %}
+        <div class="result-card">
+            <h3>Predicted Marks: {{ prediction_text }}</h3>
+            <h3 class="{{ status_class }}" style="font-size: 22px;">
+                Status: {{ result }}
+            </h3>
+
+        </div>
+    {% endif %}
+
+
+    {% if error_message %}
+        <div class="result-card error">
+            <h3>{{ error_message }}</h3>
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

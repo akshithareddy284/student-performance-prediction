@@ -1,0 +1,388 @@
+Student Performance Prediction using Random Forest Regression with Flask Web Application
+
+🔹 1️⃣ Problem Statement
+
+The goal of this project is to predict a student’s final grade (G3) based on important academic factors and determine whether the student will Pass or Fail.
+
+We also built a web application so users can enter details and get prediction instantly.
+
+🔹 2️⃣ Dataset Used
+
+Dataset: student-por.csv
+
+It contains:
+
+Student demographics
+
+Study habits
+
+Internal marks (G1, G2)
+
+Final grade (G3)
+
+Target variable:
+
+G3 → Final grade (0–20 scale)
+
+🔹 3️⃣ Feature Selection
+
+Instead of using all 33 features, I selected the most important ones:
+
+G2
+G1
+absences
+failures
+studytime
+
+
+Reason:
+
+Feature importance analysis showed G2 was the strongest predictor.
+
+Selecting only top features simplifies the model.
+
+Reduces complexity.
+
+Makes deployment easier.
+
+This improves interpretability.
+
+🔹 4️⃣ Data Preprocessing (new-student.py)
+
+Steps performed:
+
+✅ Load dataset
+pd.read_csv()
+
+✅ Check duplicates
+data.duplicated().sum()
+
+
+No missing values found.
+
+✅ Separate target variable
+Y = data["G3"]
+
+✅ Select important features
+X = data[["G2", "G1", "absences", "failures", "studytime"]]
+
+🔹 5️⃣ Correlation Analysis
+
+I calculated correlation between features and G3.
+
+This helped verify:
+
+G2 strongly correlates with G3
+
+Failures negatively impact performance
+
+Studytime positively impacts performance
+
+🔹 6️⃣ Train-Test Split
+train_test_split(test_size=0.2, random_state=42)
+
+
+80% training data
+
+20% testing data
+
+Random state ensures reproducibility
+
+🔹 7️⃣ Model Used
+Random Forest Regressor
+
+Why Random Forest?
+
+Handles nonlinear relationships
+
+Reduces overfitting
+
+Works well with small/medium datasets
+
+High accuracy
+
+🔹 8️⃣ Hyperparameter Tuning
+
+Used:
+
+GridSearchCV
+
+
+Tuned parameters:
+
+n_estimators
+
+max_depth
+
+min_samples_split
+
+This finds best combination automatically.
+
+Why tuning?
+
+To improve model performance and avoid underfitting/overfitting.
+
+🎯 What Is This Doing?
+
+You are performing hyperparameter tuning for Random Forest using GridSearchCV.
+
+It automatically finds the best combination of model parameters.
+
+🔹 Step 1: param_grid
+param_grid = {
+    'n_estimators': [100, 200],
+    'max_depth': [None, 10, 20],
+    'min_samples_split': [2, 5],
+}
+
+
+This defines the parameter combinations to try.
+
+Let’s break each one:
+
+✅ 1️⃣ n_estimators
+
+Number of trees in the forest.
+
+'n_estimators': [100, 200]
+
+
+Means:
+
+Try model with 100 trees
+
+Try model with 200 trees
+
+More trees:
+
+Better accuracy
+
+Slower training
+
+✅ 2️⃣ max_depth
+
+Maximum depth of each decision tree.
+
+'max_depth': [None, 10, 20]
+
+
+None → No limit (tree grows fully)
+
+10 → Limit tree depth to 10
+
+20 → Limit tree depth to 20
+
+Why important?
+
+Too deep → Overfitting
+
+Too shallow → Underfitting
+
+✅ 3️⃣ min_samples_split
+
+Minimum samples required to split a node.
+
+'min_samples_split': [2, 5]
+
+
+2 → Default (more splitting)
+
+5 → More strict splitting (less overfitting)
+
+🔢 How Many Models Will Be Tested?
+
+Combinations:
+
+2 (n_estimators)
+× 3 (max_depth)
+× 2 (min_samples_split)
+= 12 models
+
+
+So GridSearch will train 12 different Random Forest models.
+
+🔹 Step 2: GridSearchCV
+grid = GridSearchCV(
+    RandomForestRegressor(random_state=42),
+    param_grid,
+    cv=5,
+    scoring='r2',
+    n_jobs=-1
+)
+
+
+Now let’s break this.
+
+✅ RandomForestRegressor(random_state=42)
+
+Base model.
+
+random_state=42 ensures:
+
+Same results every time
+
+Reproducibility
+
+✅ param_grid
+
+The combinations to test (12 models).
+
+✅ cv=5
+
+This means 5-fold cross validation.
+
+Dataset is divided into 5 parts:
+
+Train on 4 parts
+
+Test on 1 part
+
+Repeat 5 times
+
+This gives more reliable performance than simple train-test split.
+
+✅ scoring='r2'
+
+Model performance is evaluated using:
+
+R² Score
+
+Since this is regression, R² is appropriate.
+
+GridSearch will select the model with highest average R².
+
+✅ n_jobs=-1
+
+This means:
+
+Use all CPU cores to train models in parallel.
+
+Speeds up training.
+
+🔹 9️⃣ Model Evaluation
+
+Metrics used:
+
+✔ R² Score
+
+Measures how well model explains variance.
+
+✔ RMSE
+
+Measures average prediction error.
+
+✔ Overfitting Check
+
+Compared:
+
+Train R²
+Test R²
+
+
+If difference is small → model generalizes well.
+
+🔹 🔟 Feature Importance
+forest.feature_importances_
+
+
+This tells which feature influences prediction most.
+
+Usually:
+
+G2 highest importance
+
+
+Meaning second period marks strongly affect final marks.
+
+🔹 1️⃣1️⃣ Model Saving
+
+Saved model using:
+
+pickle.dump()
+
+
+Saved:
+
+student_model.pkl
+
+model_columns.pkl
+
+So model can be reused in prediction and Flask app.
+
+🔹 1️⃣2️⃣ predict.py
+
+This file is for testing prediction without UI.
+
+It:
+
+Loads model
+
+Creates sample student input
+
+Predicts G3
+
+Applies threshold:
+
+if predicted_marks >= 10:
+    Pass
+else:
+    Fail
+
+
+This converts regression output into practical decision.
+
+🔹 1️⃣3️⃣ Flask Web Application (app.py)
+
+This makes project interactive.
+
+Step 1: User enters:
+
+G1
+
+G2
+
+absences
+
+failures
+
+studytime (in hours)
+
+🔹 Study Time Conversion Logic
+
+Dataset uses studytime scale 1–4.
+
+But user enters hours.
+
+So I convert hours to dataset scale:
+
+if study_hours < 2:
+    studytime = 1
+elif 2 <= study_hours < 5:
+    studytime = 2
+elif 5 <= study_hours < 10:
+    studytime = 3
+else:
+    studytime = 4
+
+
+This ensures consistency with training data.
+
+Example:
+
+5 hrs → Level 3
+
+22 hrs → Level 4
+
+🔹 Prediction Flow in Flask
+
+Collect form data
+
+Convert study hours
+
+Create DataFrame
+
+Predict using model
+
+Apply Pass/Fail threshold
+
+Return result to UI
